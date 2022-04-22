@@ -29,6 +29,23 @@ where
     }
 }
 
+pub trait MulAccTest<A = Self, B = A> {
+    /// Multiply and accumulate in this variable, formally `*self += a * b`.
+    fn mul_acc_test(&mut self, a: &A, b: &B);
+}
+
+/// Default for types which supports `mul_add`
+impl<N, A, B> MulAccTest<A, B> for N
+where
+    N: Copy,
+    B: std::ops::Add<N, Output = N> + Copy,
+    A: std::ops::Mul<B, Output = B> + Copy,
+{
+    fn mul_acc_test(&mut self, a: &A, b: &B) {
+        *self = (*a * *b) + *self;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::MulAcc;

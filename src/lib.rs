@@ -104,6 +104,7 @@ pub use crate::sparse::{
 
 pub use crate::dense_vector::{DenseVector, DenseVectorMut};
 pub use crate::mul_acc::MulAcc;
+pub use crate::mul_acc::MulAccTest;
 
 pub use crate::sparse::symmetric::is_symmetric;
 

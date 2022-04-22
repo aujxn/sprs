@@ -296,6 +296,140 @@ pub fn csr_mulacc_dense_colmaj<'a, N, A, B, I, Iptr>(
     }
 }
 
+pub fn csr_mulacc_dense_colmaj_clone<'a, N, A, B, I, Iptr>(
+    lhs: CsMatViewI<A, I, Iptr>,
+    rhs: ArrayView<B, Ix2>,
+    mut out: ArrayViewMut<'a, N, Ix2>,
+) where
+    N: 'a + crate::MulAcc<A, B> + Clone,
+    I: 'a + SpIndex,
+    Iptr: 'a + SpIndex,
+{
+    assert_eq!(lhs.cols(), rhs.shape()[0], "Dimension mismatch");
+    assert_eq!(lhs.rows(), out.shape()[0], "Dimension mismatch");
+    assert_eq!(rhs.shape()[1], out.shape()[1], "Dimension mismatch");
+    assert!(lhs.is_csr(), "Storage mismatch");
+
+    let axis1 = Axis(1);
+    for (mut ocol, rcol) in out.axis_iter_mut(axis1).zip(rhs.axis_iter(axis1)) {
+        for (orow, lrow) in lhs.outer_iterator().enumerate() {
+            let mut oval = ocol[[orow]].clone();
+            for (rrow, lval) in lrow.iter() {
+                let rval = &rcol[[rrow]];
+                oval.mul_acc(lval, rval);
+            }
+            ocol[[orow]] = oval;
+        }
+    }
+}
+
+pub fn csr_mulacc_dense_colmaj_copy<'a, N, A, B, I, Iptr>(
+    lhs: CsMatViewI<A, I, Iptr>,
+    rhs: ArrayView<B, Ix2>,
+    mut out: ArrayViewMut<'a, N, Ix2>,
+) where
+    N: 'a + crate::MulAcc<A, B> + Copy,
+    I: 'a + SpIndex,
+    Iptr: 'a + SpIndex,
+{
+    assert_eq!(lhs.cols(), rhs.shape()[0], "Dimension mismatch");
+    assert_eq!(lhs.rows(), out.shape()[0], "Dimension mismatch");
+    assert_eq!(rhs.shape()[1], out.shape()[1], "Dimension mismatch");
+    assert!(lhs.is_csr(), "Storage mismatch");
+
+    let axis1 = Axis(1);
+    for (mut ocol, rcol) in out.axis_iter_mut(axis1).zip(rhs.axis_iter(axis1)) {
+        for (orow, lrow) in lhs.outer_iterator().enumerate() {
+            let mut oval = ocol[[orow]];
+            for (rrow, lval) in lrow.iter() {
+                let rval = &rcol[[rrow]];
+                oval.mul_acc(lval, rval);
+            }
+            ocol[[orow]] = oval;
+        }
+    }
+}
+
+pub fn csr_dense_colmaj<'a, N, A, B, I, Iptr>(
+    lhs: CsMatViewI<A, I, Iptr>,
+    rhs: ArrayView<B, Ix2>,
+    mut out: ArrayViewMut<'a, N, Ix2>,
+) where
+    N: 'a + crate::MulAccTest<A, B>,
+    I: 'a + SpIndex,
+    Iptr: 'a + SpIndex,
+{
+    assert_eq!(lhs.cols(), rhs.shape()[0], "Dimension mismatch");
+    assert_eq!(lhs.rows(), out.shape()[0], "Dimension mismatch");
+    assert_eq!(rhs.shape()[1], out.shape()[1], "Dimension mismatch");
+    assert!(lhs.is_csr(), "Storage mismatch");
+
+    let axis1 = Axis(1);
+    for (mut ocol, rcol) in out.axis_iter_mut(axis1).zip(rhs.axis_iter(axis1)) {
+        for (orow, lrow) in lhs.outer_iterator().enumerate() {
+            let oval = &mut ocol[[orow]];
+            for (rrow, lval) in lrow.iter() {
+                let rval = &rcol[[rrow]];
+                oval.mul_acc_test(lval, rval);
+            }
+        }
+    }
+}
+
+pub fn csr_dense_colmaj_clone<'a, N, A, B, I, Iptr>(
+    lhs: CsMatViewI<A, I, Iptr>,
+    rhs: ArrayView<B, Ix2>,
+    mut out: ArrayViewMut<'a, N, Ix2>,
+) where
+    N: 'a + crate::MulAccTest<A, B> + Clone,
+    I: 'a + SpIndex,
+    Iptr: 'a + SpIndex,
+{
+    assert_eq!(lhs.cols(), rhs.shape()[0], "Dimension mismatch");
+    assert_eq!(lhs.rows(), out.shape()[0], "Dimension mismatch");
+    assert_eq!(rhs.shape()[1], out.shape()[1], "Dimension mismatch");
+    assert!(lhs.is_csr(), "Storage mismatch");
+
+    let axis1 = Axis(1);
+    for (mut ocol, rcol) in out.axis_iter_mut(axis1).zip(rhs.axis_iter(axis1)) {
+        for (orow, lrow) in lhs.outer_iterator().enumerate() {
+            let mut oval = ocol[[orow]].clone();
+            for (rrow, lval) in lrow.iter() {
+                let rval = &rcol[[rrow]];
+                oval.mul_acc_test(lval, rval);
+            }
+            ocol[[orow]] = oval;
+        }
+    }
+}
+
+pub fn csr_dense_colmaj_copy<'a, N, A, B, I, Iptr>(
+    lhs: CsMatViewI<A, I, Iptr>,
+    rhs: ArrayView<B, Ix2>,
+    mut out: ArrayViewMut<'a, N, Ix2>,
+) where
+    N: 'a + crate::MulAccTest<A, B> + Copy,
+    I: 'a + SpIndex,
+    Iptr: 'a + SpIndex,
+{
+    assert_eq!(lhs.cols(), rhs.shape()[0], "Dimension mismatch");
+    assert_eq!(lhs.rows(), out.shape()[0], "Dimension mismatch");
+    assert_eq!(rhs.shape()[1], out.shape()[1], "Dimension mismatch");
+    assert!(lhs.is_csr(), "Storage mismatch");
+
+    let axis1 = Axis(1);
+    for (mut ocol, rcol) in out.axis_iter_mut(axis1).zip(rhs.axis_iter(axis1)) {
+        for (orow, lrow) in lhs.outer_iterator().enumerate() {
+            let mut oval = ocol[[orow]];
+            for (rrow, lval) in lrow.iter() {
+                let rval = &rcol[[rrow]];
+                oval.mul_acc_test(lval, rval);
+            }
+            ocol[[orow]] = oval;
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
