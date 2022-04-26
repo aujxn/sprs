@@ -275,7 +275,9 @@ pub fn csr_mulacc_dense_colmaj<'a, N, A, B, I, Iptr>(
     rhs: ArrayView<B, Ix2>,
     mut out: ArrayViewMut<'a, N, Ix2>,
 ) where
-    N: 'a + crate::MulAcc<A, B>,
+    A: Send + Sync,
+    B: Send + Sync,
+    N: 'a + crate::MulAcc<A, B> + Sync + Send,
     I: 'a + SpIndex,
     Iptr: 'a + SpIndex,
 {
@@ -285,15 +287,17 @@ pub fn csr_mulacc_dense_colmaj<'a, N, A, B, I, Iptr>(
     assert!(lhs.is_csr(), "Storage mismatch");
 
     let axis1 = Axis(1);
-    for (mut ocol, rcol) in out.axis_iter_mut(axis1).zip(rhs.axis_iter(axis1)) {
-        for (orow, lrow) in lhs.outer_iterator().enumerate() {
-            let oval = &mut ocol[[orow]];
-            for (rrow, lval) in lrow.iter() {
-                let rval = &rcol[[rrow]];
-                oval.mul_acc(lval, rval);
+    ndarray::Zip::from(out.axis_iter_mut(axis1))
+        .and(rhs.axis_iter(axis1))
+        .par_for_each(|mut ocol, rcol| {
+            for (orow, lrow) in lhs.outer_iterator().enumerate() {
+                let oval = &mut ocol[[orow]];
+                for (rrow, lval) in lrow.iter() {
+                    let rval = &rcol[[rrow]];
+                    oval.mul_acc(lval, rval);
+                }
             }
-        }
-    }
+        });
 }
 
 pub fn csr_mulacc_dense_colmaj_clone<'a, N, A, B, I, Iptr>(

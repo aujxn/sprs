@@ -105,6 +105,22 @@ fn run_benches(
         },
     );
 
+    /*
+    group.bench_with_input(
+        BenchmarkId::new("parallel", label),
+        &(mat, rhs, out.clone()),
+        |b, (mat, rhs, out)| {
+            b.iter(|| {
+                sprs::prod::par_csr_mulacc_dense_colmaj(
+                    mat.view(),
+                    rhs.view(),
+                    out.clone().view_mut(),
+                )
+            })
+        },
+    );
+    */
+
     group.bench_with_input(
         BenchmarkId::new("cloned", label),
         &(mat, rhs, out.clone()),
